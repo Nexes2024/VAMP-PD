@@ -5,3 +5,6 @@ opencv-python
 tqdm
 torch
 mmpose==1.3.2
+scikit-learn
+openpyxl
+matplotlib
