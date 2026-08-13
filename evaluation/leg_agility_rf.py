@@ -38,7 +38,10 @@ os.makedirs(args.outdir, exist_ok=True)
 # ----------------------------------------------------------------------
 # 1. Load & clean
 # ----------------------------------------------------------------------
-df = pd.read_excel(PATH, sheet_name="legagility_left")
+df = pd.read_excel(PATH, sheet_name=0)
+df.columns = [c.strip() for c in df.columns]
+if "Score" in df.columns and "score" not in df.columns:
+    df = df.rename(columns={"Score": "score"})
 
 # Columns that are IDs / paths / acquisition artifacts -> not features.
 DROP = ["video", "rel_path", "leg", "status",

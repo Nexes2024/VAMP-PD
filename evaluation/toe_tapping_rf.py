@@ -34,6 +34,7 @@ os.makedirs(args.outdir, exist_ok=True)
 # 1. Load & column selection
 # ----------------------------------------------------------------------
 df = pd.read_excel(PATH)
+df.columns = [c.strip() for c in df.columns]
 
 # Identifiers / metadata (the "first few" non-useful cols) + recording/processing
 # artifacts. 'hand', 'cycle_count', 'cycles_per_second' were requested but are

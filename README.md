@@ -81,6 +81,16 @@ python evaluation/hand_movement_rf.py \
 
 The finger-tapping benchmark uses a nested cross-validation procedure for top-k feature selection.
 
+### Evaluation input format
+
+Evaluation scripts expect an Excel spreadsheet containing:
+
+- `subject`: anonymized subject identifier
+- `score`: MDS-UPDRS severity score (0–3)
+- task-specific feature columns produced by the feature-extraction scripts
+
+Metadata and acquisition columns such as video name, relative path, side, frame count, FPS, detection rate, and status may also be present; these are excluded from model features by the evaluation scripts.
+
 ## Dataset access
 
 The VAMP-PD dataset is released under controlled access for non-commercial research use.

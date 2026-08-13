@@ -56,6 +56,7 @@ K_LIST_RAW = [5, 10, 15, 20, 30, 40, 50]
 # --------------------------------------------------------------------------- #
 def load_data(path):
     df = pd.read_excel(path)
+    df.columns = [c.strip() for c in df.columns]
     feature_cols = [c for c in df.columns if c not in ARTIFACT_COLS + [TARGET_COL]]
     X = df[feature_cols].copy()
     y = df[TARGET_COL].copy()

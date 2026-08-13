@@ -39,7 +39,7 @@ from sklearn.metrics import (accuracy_score, classification_report,
 from sklearn.model_selection import GroupKFold
 
 RANDOM_STATE = 42
-TARGET_COL = "Score"
+TARGET_COL = "score"
 GROUP_COL = "subject"
 
 # Acquisition/bookkeeping columns that carry no biomechanical signal and
@@ -58,7 +58,9 @@ K_GRID_REQUESTED = [5, 10, 15, 20, 30, 40, 50]
 # --------------------------------------------------------------------------- #
 def load_data(path):
     df = pd.read_excel(path)
-    df.columns = [c.strip() for c in df.columns]  # fixes trailing-space "Score "
+    df.columns = [c.strip() for c in df.columns]
+    if "Score" in df.columns and "score" not in df.columns:
+        df = df.rename(columns={"Score": "score"})
     drop_cols = ARTIFACT_COLS + [GROUP_COL, TARGET_COL]
     feature_cols = [c for c in df.columns if c not in drop_cols]
     X = df[feature_cols].copy()

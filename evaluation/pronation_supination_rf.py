@@ -36,12 +36,15 @@ os.makedirs(args.outdir, exist_ok=True)
 ARTIFACT_COLS = ['rel_path', 'hand', 'status', 'duration_s', 'fps', 'total_frames',
                  'detected_frames', 'detection_rate', 'cycle_count', 'cycles_per_second']
 ID_COLS = ['video', 'subject']
-TARGET = 'Score'
+TARGET = 'score'
 K_GRID = [5, 10, 15, 20, 30, 40, 50]
 
 
 def load_data():
     df = pd.read_excel(PATH, sheet_name=0)
+    df.columns = [c.strip() for c in df.columns]
+    if "Score" in df.columns and "score" not in df.columns:
+        df = df.rename(columns={"Score": "score"})
     feats = [c for c in df.columns if c not in ARTIFACT_COLS + ID_COLS + [TARGET]]
     X = df[feats].astype(float).values
     y = df[TARGET].astype(int).values
