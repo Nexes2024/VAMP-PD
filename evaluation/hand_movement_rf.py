@@ -10,8 +10,7 @@ Pipeline summary
 2. Keep BOTH left and right hand samples per subject (no aggregation), but
    guarantee leakage-free evaluation by grouping CV splits on `subject`, so a
    subject's left+right samples never get split across train/test.
-3. 5-fold GroupKFold (group = subject). See report for why 10-fold is not
-   recommended on this dataset (sparse rare-class folds).
+3. 5-fold GroupKFold (group = subject).
 4. Inside every training fold: impute missing values (median, fold-fit only),
    rank features by Random Forest Mean Decrease Impurity (MDI), then refit RF
    on the top-k features for k in {5,10,15,20,30,40,50}, each capped at the
@@ -33,15 +32,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, classification_report,
                               confusion_matrix, f1_score, mean_absolute_error)
 from sklearn.model_selection import GroupKFold
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 
 RANDOM_STATE = 42
 TARGET_COL = "Score"
@@ -151,41 +146,6 @@ def run_rf_groupkfold(X, y, groups, feature_cols, n_splits=5):
                 fold_rankings=fold_rankings)
 
 
-def run_other_classifier(clf_builder, X, y, groups, n_splits=5, scale=False):
-    gkf = GroupKFold(n_splits=n_splits)
-    accs, f1ms, maes = [], [], []
-    for tr, te in gkf.split(X, y, groups=groups):
-        X_tr, X_te = X.iloc[tr], X.iloc[te]
-        y_tr, y_te = y.iloc[tr], y.iloc[te]
-        imp = SimpleImputer(strategy="median")
-        X_tr_i, X_te_i = imp.fit_transform(X_tr), imp.transform(X_te)
-        if scale:
-            sc = StandardScaler()
-            X_tr_i, X_te_i = sc.fit_transform(X_tr_i), sc.transform(X_te_i)
-        clf = clf_builder().fit(X_tr_i, y_tr)
-        preds = clf.predict(X_te_i)
-        accs.append(accuracy_score(y_te, preds))
-        f1ms.append(f1_score(y_te, preds, average="macro"))
-        maes.append(mean_absolute_error(y_te, preds))
-    return {"acc_mean": float(np.mean(accs)), "acc_std": float(np.std(accs)),
-            "f1m_mean": float(np.mean(f1ms)), "f1m_std": float(np.std(f1ms)),
-            "mae_mean": float(np.mean(maes)), "mae_std": float(np.std(maes))}
-
-
-def tenfold_feasibility_check(y, groups, n_splits=10):
-    gkf = GroupKFold(n_splits=n_splits)
-    rows = []
-    for fold_idx, (tr, te) in enumerate(gkf.split(y, y, groups=groups)):
-        cc_test = y.iloc[te].value_counts().reindex([0, 1, 2, 3], fill_value=0)
-        cc_train = y.iloc[tr].value_counts().reindex([0, 1, 2, 3], fill_value=0)
-        rows.append({
-            "fold": fold_idx, "n_test_subjects": groups.iloc[te].nunique(),
-            "n_test_samples": len(te),
-            "test_class0": cc_test[0], "test_class1": cc_test[1],
-            "test_class2": cc_test[2], "test_class3": cc_test[3],
-            "train_class3_n": cc_train[3],
-        })
-    return pd.DataFrame(rows)
 
 
 # --------------------------------------------------------------------------- #
@@ -241,31 +201,6 @@ def main(data_path, outdir):
     stability_df.to_csv(outdir / "feature_stability.csv", index=False)
     print("\nMost stable / important features:\n", stability_df.head(10).to_string(index=False))
 
-    # 10-fold feasibility check
-    tf = tenfold_feasibility_check(y, groups, n_splits=10)
-    tf.to_csv(outdir / "tenfold_feasibility_check.csv", index=False)
-    print("\n10-fold GroupKFold feasibility check:\n", tf.to_string(index=False))
-
-    # Bonus classifier comparison using the most stable top-5 feature set
-    stable_top5 = stability_df["feature"].head(5).tolist()
-    Xk = X[stable_top5]
-    bonus = {
-        "RandomForest(best_k)": best,
-        "Dummy": ds,
-        "LogisticRegression": run_other_classifier(
-            lambda: LogisticRegression(max_iter=2000, class_weight="balanced", random_state=RANDOM_STATE),
-            Xk, y, groups, scale=True),
-        "SVM-RBF": run_other_classifier(
-            lambda: SVC(kernel="rbf", class_weight="balanced", random_state=RANDOM_STATE),
-            Xk, y, groups, scale=True),
-        "KNN(k=5)": run_other_classifier(
-            lambda: KNeighborsClassifier(n_neighbors=5), Xk, y, groups, scale=True),
-        "GradientBoosting": run_other_classifier(
-            lambda: GradientBoostingClassifier(random_state=RANDOM_STATE), Xk, y, groups, scale=False),
-    }
-    bonus_df = pd.DataFrame(bonus).T
-    bonus_df.to_csv(outdir / "classifier_comparison.csv")
-    print("\nClassifier comparison (top-5 stable features):\n", bonus_df.to_string())
 
     with open(outdir / "summary.json", "w") as f:
         json.dump({
@@ -280,6 +215,6 @@ def main(data_path, outdir):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
-    ap.add_argument("--outdir", default="results")
+    ap.add_argument("--outdir", default="outputs/hand_movement")
     args = ap.parse_args()
     main(args.data, args.outdir)

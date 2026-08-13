@@ -1,13 +1,12 @@
 """
 End-to-end driver: loads the finger-tapping dataset, runs the dummy baseline,
-the Random-Forest top-k feature-selection sweep (+ nested CV), a 10-fold
-feasibility check, and a light supplementary comparison against other
-classifiers. Saves all tables/figures to ./outputs.
+the Random-Forest top-k feature-selection sweep and nested CV.
+Saves result tables and figures to the selected output directory.
 
 Usage:
     python run_analysis.py /path/to/Fingertapping-final-bothsides.xlsx
 """
-import sys
+import argparse
 import json
 import warnings
 import numpy as np
@@ -26,9 +25,8 @@ from finger_tapping_pipeline import (
 
 warnings.filterwarnings("ignore")
 
-OUT = "outputs"
 import os
-os.makedirs(OUT, exist_ok=True)
+OUT = None
 
 
 def main(xlsx_path):
@@ -96,38 +94,7 @@ def main(xlsx_path):
           f"(per spec, other classifiers are {'REQUIRED' if needs_other_clf else 'optional'})")
 
     # ---------------------------------------------------------------- #
-    # 5. Supplementary classifier comparison (run regardless, for context)
-    # ---------------------------------------------------------------- #
-    print("\n=== Supplementary classifier comparison (top-k sweep each) ===")
-    other_results = {}
-    for clf_name in ["logistic_regression", "svm_rbf", "gradient_boosting", "knn"]:
-        sw = topk_sweep(clf_name, X, y, groups, k_list)
-        bk = sw["best_k"]
-        other_results[clf_name] = {"best_k": bk, **sw["pooled_overall"][bk]}
-        print(f"  {clf_name:20s} best_k={bk:>2d}  "
-              f"acc={sw['pooled_overall'][bk]['accuracy']:.3f}  "
-              f"macroF1={sw['pooled_overall'][bk]['macro_f1']:.3f}  "
-              f"mae={sw['pooled_overall'][bk]['mae']:.3f}")
-    other_results["random_forest"] = {"best_k": best_k_naive, **sweep_rf["pooled_overall"][best_k_naive]}
-    pd.DataFrame(other_results).T.round(3).to_csv(f"{OUT}/classifier_comparison.csv")
-
-    # ---------------------------------------------------------------- #
-    # 6. 10-fold feasibility check
-    # ---------------------------------------------------------------- #
-    print("\n=== 10-fold GroupKFold feasibility check ===")
-    gkf10 = GroupKFold(n_splits=10, shuffle=True, random_state=RNG)
-    rows10 = []
-    for i, (tr, te) in enumerate(gkf10.split(df, y, groups)):
-        cls = y.iloc[te].value_counts().sort_index().to_dict()
-        rows10.append({"fold": i, "n_test": len(te), "n_subjects_test": groups.iloc[te].nunique(),
-                        "n_classes_present": len(cls), "class_counts": cls})
-    fold10_df = pd.DataFrame(rows10)
-    fold10_df.to_csv(f"{OUT}/tenfold_feasibility.csv", index=False)
-    print(fold10_df[["fold", "n_test", "n_subjects_test", "n_classes_present"]])
-    print(f"Folds missing >=1 class: {(fold10_df['n_classes_present'] < 4).sum()} / 10")
-
-    # ---------------------------------------------------------------- #
-    # 7. Full-data RF feature importance (for reporting / plot only)
+    # 5. Full-data RF feature importance (for reporting / plot only)
     # ---------------------------------------------------------------- #
     imputer = SimpleImputer(strategy="median")
     X_imp = pd.DataFrame(imputer.fit_transform(X), columns=X.columns, index=X.index)
@@ -209,5 +176,11 @@ def main(xlsx_path):
 
 
 if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else "Fingertapping-final-bothsides.xlsx"
-    main(path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data", required=True, help="Input feature spreadsheet")
+    parser.add_argument("--outdir", default="outputs/finger_tapping")
+    args = parser.parse_args()
+
+    OUT = args.outdir
+    os.makedirs(OUT, exist_ok=True)
+    main(args.data)

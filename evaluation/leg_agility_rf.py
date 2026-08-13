@@ -17,12 +17,8 @@ Methodology
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.dummy import DummyClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GroupKFold
 from sklearn.metrics import (accuracy_score, f1_score,
                              mean_absolute_error, confusion_matrix)
@@ -138,35 +134,6 @@ print(f"  acc={dummy_metrics['accuracy']:.3f} | "
 gap = best_metrics["accuracy"] - dummy_metrics["accuracy"]
 print(f"Accuracy gap RF - Dummy = {gap*100:.1f} points\n")
 
-
-# ----------------------------------------------------------------------
-# 5. If the gap is small (<10 pts), try additional classifiers
-# ----------------------------------------------------------------------
-other_results = {}
-if gap < 0.10:
-    print("Gap < 10 points -> evaluating additional classifiers (at best_k)\n")
-    candidates = {
-        "RF (balanced)": lambda: RandomForestClassifier(
-            n_estimators=300, class_weight="balanced", random_state=RNG),
-        "LogisticRegression": lambda: make_pipeline(
-            StandardScaler(),
-            LogisticRegression(max_iter=2000, class_weight="balanced")),
-        "SVM (RBF)": lambda: make_pipeline(
-            StandardScaler(),
-            SVC(class_weight="balanced", random_state=RNG)),
-        "GradientBoosting": lambda: GradientBoostingClassifier(
-            random_state=RNG),
-    }
-    for name, fac in candidates.items():
-        pred, _ = run_cv(fac, k=best_k)
-        m = score_block(pred)
-        other_results[name] = (m, pred)
-        print(f"  {name:<20} | acc={m['accuracy']:.3f} | "
-              f"macroF1={m['macro_f1']:.3f} | MAE={m['mae']:.3f}")
-    print()
-else:
-    print("Gap >= 10 points -> RF clearly beats baseline; "
-          "no extra classifiers needed.\n")
 
 
 # ----------------------------------------------------------------------

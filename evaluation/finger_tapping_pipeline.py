@@ -27,10 +27,7 @@ Methodology
 import warnings
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import GroupKFold
 from sklearn.impute import SimpleImputer
@@ -86,22 +83,16 @@ def rf_importance_ranking(X_train, y_train):
 
 
 def build_classifier(name):
-    if name == "random_forest":
-        return RandomForestClassifier(
-            n_estimators=500, min_samples_leaf=2, max_features="sqrt",
-            class_weight="balanced_subsample", random_state=RNG, n_jobs=-1,
-        ), False
-    if name == "logistic_regression":
-        return LogisticRegression(
-            max_iter=5000, class_weight="balanced", random_state=RNG,
-        ), True
-    if name == "svm_rbf":
-        return SVC(kernel="rbf", class_weight="balanced", random_state=RNG), True
-    if name == "gradient_boosting":
-        return GradientBoostingClassifier(random_state=RNG), False
-    if name == "knn":
-        return KNeighborsClassifier(n_neighbors=5), True
-    raise ValueError(name)
+    if name != "random_forest":
+        raise ValueError(name)
+    return RandomForestClassifier(
+        n_estimators=500,
+        min_samples_leaf=2,
+        max_features="sqrt",
+        class_weight="balanced_subsample",
+        random_state=RNG,
+        n_jobs=-1,
+    ), False
 
 
 def fit_predict(clf_name, X_train, y_train, X_test, needs_scaling):

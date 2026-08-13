@@ -16,12 +16,9 @@ Design choices (see report for rationale):
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, HistGradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.dummy import DummyClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, confusion_matrix
 
 RNG = 42
@@ -159,35 +156,6 @@ def main():
         prec = tp/pred_c if pred_c else 0
         print(f"  Score {c}: support={support:2d} recall={rec:.2f} precision={prec:.2f}")
 
-    # ---- Extra classifiers if gap < 10 points ----
-    results = {'RandomForest': best}
-    if acc_gap < 0.10:
-        print("\nGap < 10 points -> running additional classifiers...")
-        extra = {
-            'ExtraTrees': (lambda: ExtraTreesClassifier(n_estimators=300, random_state=RNG, n_jobs=-1), False),
-            'HistGradBoost': (lambda: HistGradientBoostingClassifier(random_state=RNG), False),
-            'LogisticReg': (lambda: LogisticRegression(max_iter=2000, random_state=RNG), True),
-            'SVC_rbf': (lambda: SVC(random_state=RNG), True),
-        }
-        for name, (builder, scale) in extra.items():
-            edf, eoof, _ = eval_topk_nested(X, y, groups, feats, builder, needs_scaling=scale, n_splits=5)
-            eb = edf.sort_values(['OOF_macroF1', 'OOF_acc'], ascending=False).iloc[0]
-            results[name] = eb
-            print(f"  {name:14s} best k={int(eb['k']):2d} acc={eb['OOF_acc']:.3f} "
-                  f"macroF1={eb['OOF_macroF1']:.3f} MAE={eb['OOF_MAE']:.3f}")
-    else:
-        print("\nGap >= 10 points -> RandomForest is a clear baseline; extra classifiers optional.")
-
-    # ---- 10-fold feasibility check (RF only) ----
-    print("\n=== 10-fold GroupKFold feasibility (RF) ===")
-    rf10, oof10, _ = eval_topk_nested(X, y, groups, feats, rf_factory, n_splits=10)
-    b10 = rf10.sort_values(['OOF_macroF1', 'OOF_acc'], ascending=False).iloc[0]
-    print(f"Best RF 10-fold: k={int(b10['k'])} acc={b10['OOF_acc']:.3f} "
-          f"macroF1={b10['OOF_macroF1']:.3f} MAE={b10['OOF_MAE']:.3f}")
-    # count test folds missing class 3
-    gkf10 = GroupKFold(n_splits=10)
-    missing3 = sum(1 for _, te in gkf10.split(X, y, groups) if 3 not in y[te])
-    print(f"Test folds (of 10) containing ZERO Score-3 samples: {missing3}")
 
     # ---- feature selection frequency at best k (stability) ----
     from collections import Counter
@@ -199,7 +167,7 @@ def main():
     # save artifacts
     rf_df.to_csv(os.path.join(args.outdir, "rf_topk_results.csv"), index=False)
     np.save(os.path.join(args.outdir, "cm_best.npy"), cm)
-    return rf_df, cm, best_k, dum_mf, dum_st, results, rf10, missing3, cnt
+    return rf_df, cm, best_k, dum_mf, dum_st, cnt
 
 
 if __name__ == '__main__':
