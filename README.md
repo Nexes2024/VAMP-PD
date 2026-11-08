@@ -134,4 +134,5 @@ Saadatnia, M.H., et al.: VAMP-PD: A Task-Structured Single-Camera Video Benchmar
 ```
 ## License
 
-Code and dataset licensing information will be provided with the final release. Dataset access is intended for non-commercial research use subject to the terms provided with the Zenodo record.
+- **Code:** released under the [MIT License](LICENSE).
+- **Dataset:** available for non-commercial research use only, under the terms of the [VAMP-PD Data Use Agreement](VAMP-PD_DUA.docx).
