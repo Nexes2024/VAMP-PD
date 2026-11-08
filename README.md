@@ -32,6 +32,7 @@ VAMP-PD/
 │   ├── toe_tapping_rf.py
 │   ├── leg_agility_rf.py
 │   └── gait_rf.py
+├── VAMP-PD_DUA.docx
 ├── requirements.txt
 └── README.md
 ```
@@ -93,13 +94,20 @@ Metadata and acquisition columns such as video name, relative path, side, frame 
 
 ## Dataset access
 
-The VAMP-PD dataset is released under controlled access for non-commercial research use.
+The VAMP-PD dataset (face-blurred videos of all six tasks and MDS-UPDRS labels) is available on Zenodo for non-commercial research under a short, one-page Data Use Agreement (DUA).
 
-Zenodo DOI:
+Zenodo DOI: **https://doi.org/10.5281/zenodo.21847745**
 
-**https://doi.org/10.5281/zenodo.21847745**
+To request access:
 
-The dataset record is currently being finalized. Access conditions include restrictions on re-identification and redistribution of participant videos.
+1. Download the DUA: [`VAMP-PD_DUA.docx`](VAMP-PD_DUA.docx).
+2. Fill in your details, sign it by typing your name, and save it as a PDF.
+3. Email the signed PDF to **mohadisaadat@gmail.com**.
+4. Request access on the Zenodo record using the same email address.
+
+Access is granted once the signed DUA is received. Independent researchers and students are welcome to apply.
+
+Pose keypoints and features are not part of the release; they can be generated from the videos with the scripts in this repository.
 
 ## Privacy
 
@@ -109,7 +117,20 @@ Because full-body movement videos may retain residual re-identification risk, ac
 
 ## Citation
 
-Citation information will be updated when the final publication record is available.
+If you use VAMP-PD, please cite:
+
+```bibtex
+@inproceedings{saadatnia2027vamppd,
+  title     = {{VAMP-PD}: A Task-Structured Single-Camera Video Benchmark for {MDS-UPDRS} Motor Severity Assessment in {Parkinson's} Disease},
+  author    = {Saadatnia, Mohammad Hadi and Haghighi, Ali and Poureh, Amiratabak and Baradaranfard, Mahdi and Saadatnia, Saba and Ahmadi, Mohammad Hossein and Tajmirriahi, Amirhossein and Nasrabadi, Erfan Nasri and Saadatnia, Mohammad and Safavi, Saeid},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026 Satellite Events},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {17273},
+  publisher = {Springer},
+  year      = {2027},
+  doi       = {10.1007/978-3-032-43973-4_11}
+}
+```
 
 ## License
 
