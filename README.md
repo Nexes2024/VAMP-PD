@@ -119,19 +119,19 @@ Because full-body movement videos may retain residual re-identification risk, ac
 
 If you use VAMP-PD, please cite:
 
+Saadatnia, M.H., et al.: VAMP-PD: A Task-Structured Single-Camera Video Benchmark for MDS-UPDRS Motor Severity Assessment in Parkinson's Disease. In: MICCAI 2026 Satellite Events (AMAI 2026), LNCS (to appear). Dataset: https://doi.org/10.5281/zenodo.21847745
+
 ```bibtex
-@inproceedings{saadatnia2027vamppd,
+@inproceedings{saadatnia2026vamppd,
   title     = {{VAMP-PD}: A Task-Structured Single-Camera Video Benchmark for {MDS-UPDRS} Motor Severity Assessment in {Parkinson's} Disease},
-  author    = {Saadatnia, Mohammad Hadi and Haghighi, Ali and Poureh, Amiratabak and Baradaranfard, Mahdi and Saadatnia, Saba and Ahmadi, Mohammad Hossein and Tajmirriahi, Amirhossein and Nasrabadi, Erfan Nasri and Saadatnia, Mohammad and Safavi, Saeid},
-  booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026 Satellite Events},
+  author    = {Saadatnia, Mohammad Hadi and others},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026 Satellite Events (AMAI 2026)},
   series    = {Lecture Notes in Computer Science},
-  volume    = {17273},
   publisher = {Springer},
-  year      = {2027},
-  doi       = {10.1007/978-3-032-43973-4_11}
+  note      = {To appear. Dataset: https://doi.org/10.5281/zenodo.21847745},
+  year      = {2026}
 }
 ```
-
 ## License
 
 Code and dataset licensing information will be provided with the final release. Dataset access is intended for non-commercial research use subject to the terms provided with the Zenodo record.
